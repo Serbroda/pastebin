@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/joho/godotenv"
+	"github.com/teris-io/shortid"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,9 @@ var reactApp embed.FS
 func main() {
 	loadEnv()
 
+	sid, _ := shortid.New(1, shortid.DefaultABC, 2342)
+	shortid.SetDefault(sid)
+
 	var dbName = os.Getenv("DB_NAME")
 
 	database.Connect(database.ConnectionOptions{Name: dbName})
@@ -29,10 +33,7 @@ func main() {
 	app.Use(cors.New())
 
 	serveStatic(app)
-
-	app.Get("/api/v1/hello", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).SendString("Hi there")
-	})
+	setupRoutes(app)
 
 	log.Fatal(app.Listen(":3001"))
 }
@@ -45,16 +46,16 @@ func serveStatic(app *fiber.App) {
 }
 
 func setupRoutes(app *fiber.App) {
-	//github.com/teris-io/shortid
-
 	v1 := app.Group("/api/v1")
 	v1.Get("hello", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).SendString("Hi there")
 	})
 
 	pastes := v1.Group("/pastes")
-	pastes.Get("/:pasteId", handlers.GetPaste)
 	pastes.Post("/", handlers.CreateCrate)
+	pastes.Get("/:pasteId", handlers.GetPaste)
+	pastes.Patch("/:pasteId", handlers.UpdatePaste)
+	pastes.Delete("/:pasteId", handlers.DeletePaste)
 }
 
 func loadEnv() {

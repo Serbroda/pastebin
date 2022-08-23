@@ -1,12 +1,26 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Paste struct {
-	gorm.Model
-	Content string
+	ID        uint           `gorm:"primarykey" json:"-"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	SID       string         `gorm:"not null;unique" json:"id"`
+	Content   string         `json:"content"`
+	Password  string         `json:"-"`
 }
 
 type CreatePasteDto struct {
-	Content string
+	Content  string `json:"content"`
+	Password string `json:"password"`
+}
+
+type UpdatePasteDto struct {
+	Content  string `json:"content"`
+	Password string `json:"password"`
 }
