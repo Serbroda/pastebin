@@ -14,10 +14,6 @@ const Home: FC = () => {
 
     return (
         <Container>
-            <h1 className="text-3xl font-bold underline text-red-600">
-                Home
-            </h1>
-
             <p>{paste?.id}</p>
         </Container>
     )
