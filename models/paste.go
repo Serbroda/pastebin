@@ -11,6 +11,7 @@ type Paste struct {
 	UpdatedAt    time.Time      `json:"updatedAt"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 	SID          string         `gorm:"not null;unique" json:"id"`
+	Title        string         `gorm:"not null" json:"title"`
 	Content      string         `json:"content"`
 	AutoDeleteAt time.Time      `json:"autoDeleteAt"`
 	Password     string         `json:"-"`
@@ -18,12 +19,14 @@ type Paste struct {
 }
 
 type CreatePasteDto struct {
+	Title        string    `json:"title"`
 	Content      string    `json:"content"`
 	Password     string    `json:"password"`
 	AutoDeleteAt time.Time `json:"autoDeleteAt"`
 }
 
 type UpdatePasteDto struct {
+	Title        string    `json:"title"`
 	Content      string    `json:"content"`
 	Password     string    `json:"password"`
 	AutoDeleteAt time.Time `json:"autoDeleteAt"`
