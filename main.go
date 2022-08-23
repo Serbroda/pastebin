@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"pastebin/database"
+	"pastebin/handlers"
 )
 
 //go:embed frontend/build
@@ -41,6 +42,19 @@ func serveStatic(app *fiber.App) {
 		Root:       http.FS(reactApp),
 		PathPrefix: "frontend/build",
 	}))
+}
+
+func setupRoutes(app *fiber.App) {
+	//github.com/teris-io/shortid
+
+	v1 := app.Group("/api/v1")
+	v1.Get("hello", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).SendString("Hi there")
+	})
+
+	pastes := v1.Group("/pastes")
+	pastes.Get("/:pasteId", handlers.GetPaste)
+	pastes.Post("/", handlers.CreateCrate)
 }
 
 func loadEnv() {
