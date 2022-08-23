@@ -1,7 +1,7 @@
 import React, {FC, useEffect, useState} from 'react'
 import {PasteDto} from "../models/PasteDto";
 import {pasteService} from "../services/Services";
-import {Link} from "react-router-dom";
+import Container from "../components/Container";
 
 const Home: FC = () => {
     const [paste, setPaste] = useState<PasteDto | undefined>(undefined);
@@ -13,23 +13,13 @@ const Home: FC = () => {
     }, []);
 
     return (
-        <div>
-            <nav
-                style={{
-                    borderBottom: "solid 1px",
-                    paddingBottom: "1rem",
-                }}
-            >
-                <Link to="/">Invoices</Link> |{" "}
-                <Link to="/pastes">Expenses</Link>
-            </nav>
-
+        <Container>
             <h1 className="text-3xl font-bold underline text-red-600">
-                Simple React Typescript Tailwind Sample
+                Home
             </h1>
 
             <p>{paste?.id}</p>
-        </div>
+        </Container>
     )
 }
 
