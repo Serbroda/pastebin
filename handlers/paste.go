@@ -2,27 +2,51 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/teris-io/shortid"
+	"log"
 	"net/http"
 	"pastebin/database"
 	"pastebin/models"
+	"pastebin/utils"
 )
 
-func CreateCrate(c *fiber.Ctx) error {
-	var dto models.CreatePasteDto
-	if err := c.BodyParser(&dto); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
+func GetPastes(store *session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		sess, err := store.Get(c)
+		if err != nil {
+			log.Println(err)
+		}
 
-	var entity models.Paste
-	entity = models.Paste{
-		Content:  dto.Content,
-		Password: dto.Password,
-		SID:      shortid.MustGenerate(),
+		var pastes []models.Paste
+		database.GetConnection().Where("session_id = ?", sess.ID()).Find(&pastes)
+		return c.Status(fiber.StatusOK).JSON(pastes)
 	}
-	database.GetConnection().Create(&entity)
+}
 
-	return c.Status(http.StatusCreated).JSON(entity)
+func CreatePaste(store *session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		sess, err := store.Get(c)
+		if err != nil {
+			log.Println(err)
+		}
+
+		var dto models.CreatePasteDto
+		if err := c.BodyParser(&dto); err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		var entity models.Paste
+		entity = models.Paste{
+			Content:   dto.Content,
+			Password:  utils.SHA1HashHex(dto.Password),
+			SID:       shortid.MustGenerate(),
+			SessionID: sess.ID(),
+		}
+		database.GetConnection().Create(&entity)
+
+		return c.Status(http.StatusCreated).JSON(entity)
+	}
 }
 
 func GetPaste(c *fiber.Ctx) error {
@@ -52,7 +76,8 @@ func UpdatePaste(c *fiber.Ctx) error {
 	}
 
 	entity.Content = dto.Content
-	entity.Password = dto.Password
+	entity.Password = utils.SHA1HashHex(dto.Password)
+
 	database.GetConnection().Save(&entity)
 
 	return c.Status(fiber.StatusOK).JSON(entity)
