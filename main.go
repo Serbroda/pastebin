@@ -5,14 +5,23 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
+	"os"
+	"pastebin/database"
 )
 
 //go:embed frontend/build
 var reactApp embed.FS
 
 func main() {
+	loadEnv()
+
+	var dbName = os.Getenv("DB_NAME")
+
+	database.Connect(database.ConnectionOptions{Name: dbName})
+
 	app := fiber.New(fiber.Config{
 		DisableKeepalive: true,
 	})
@@ -32,4 +41,11 @@ func serveStatic(app *fiber.App) {
 		Root:       http.FS(reactApp),
 		PathPrefix: "frontend/build",
 	}))
+}
+
+func loadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 }
